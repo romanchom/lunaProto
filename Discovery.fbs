@@ -1,0 +1,40 @@
+namespace luna.proto;
+
+enum ColorChannels : byte {
+  none = 0,
+  red = 1,
+  green = 2,
+  blue = 4,
+  white = 8,
+}
+
+struct UV {
+  u:float;
+  v:float;
+}
+
+struct ColorSpace {
+  white:UV;
+  red:UV;
+  green:UV;
+  blue:UV;
+}
+
+struct Point {
+  x:float;
+  y:float;
+  z:float;
+}
+
+table Strand {
+  id:byte;
+  pixelCount:short;
+  channels:ColorChannels;
+  begin:Point;
+  end:Point;
+}
+
+table Discovery {
+  name:string;
+  strands:[Strand];
+}

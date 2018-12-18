@@ -1,0 +1,22 @@
+struct RGB {
+    r:ubyte;
+    g:ubyte;
+    b:ubyte;
+}
+
+table RGBData {
+    data:[RGB];
+}
+
+union RawData {
+    RGBData,
+}
+
+table StrandData {
+    id:byte;
+    data:RawData;
+}
+
+table SetColor {
+    strands:[StrandData];
+}

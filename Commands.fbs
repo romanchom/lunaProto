@@ -1,0 +1,10 @@
+include "SetColor.fbs";
+
+union AnyCommand {
+    SetColor,
+}
+
+table Command {
+    acknowledge:bool;
+    command:AnyCommand;
+}
