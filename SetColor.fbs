@@ -1,3 +1,5 @@
+namespace luna.proto;
+
 struct RGB {
     r:ubyte;
     g:ubyte;
