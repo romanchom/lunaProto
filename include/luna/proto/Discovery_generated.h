@@ -146,37 +146,32 @@ FLATBUFFERS_STRUCT_END(Point, 12);
 FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Strand FLATBUFFERS_FINAL_CLASS {
  private:
   int8_t id_;
-  int8_t padding0__;
-  int16_t pixelCount_;
   int8_t channels_;
-  int8_t padding1__;  int16_t padding2__;
+  int16_t pixelCount_;
   Point begin_;
   Point end_;
+  ColorSpace colorSpace_;
 
  public:
   Strand() {
     memset(this, 0, sizeof(Strand));
   }
-  Strand(int8_t _id, int16_t _pixelCount, ColorChannels _channels, const Point &_begin, const Point &_end)
+  Strand(int8_t _id, ColorChannels _channels, int16_t _pixelCount, const Point &_begin, const Point &_end, const ColorSpace &_colorSpace)
       : id_(flatbuffers::EndianScalar(_id)),
-        padding0__(0),
-        pixelCount_(flatbuffers::EndianScalar(_pixelCount)),
         channels_(flatbuffers::EndianScalar(static_cast<int8_t>(_channels))),
-        padding1__(0),
-        padding2__(0),
+        pixelCount_(flatbuffers::EndianScalar(_pixelCount)),
         begin_(_begin),
-        end_(_end) {
-    (void)padding0__;
-    (void)padding1__;    (void)padding2__;
+        end_(_end),
+        colorSpace_(_colorSpace) {
   }
   int8_t id() const {
     return flatbuffers::EndianScalar(id_);
   }
-  int16_t pixelCount() const {
-    return flatbuffers::EndianScalar(pixelCount_);
-  }
   ColorChannels channels() const {
     return static_cast<ColorChannels>(flatbuffers::EndianScalar(channels_));
+  }
+  int16_t pixelCount() const {
+    return flatbuffers::EndianScalar(pixelCount_);
   }
   const Point &begin() const {
     return begin_;
@@ -184,8 +179,11 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Strand FLATBUFFERS_FINAL_CLASS {
   const Point &end() const {
     return end_;
   }
+  const ColorSpace &colorSpace() const {
+    return colorSpace_;
+  }
 };
-FLATBUFFERS_STRUCT_END(Strand, 32);
+FLATBUFFERS_STRUCT_END(Strand, 60);
 
 struct Discovery FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {

@@ -28,10 +28,11 @@ struct Point {
 
 struct Strand {
   id:byte;
-  pixelCount:short;
   channels:ColorChannels;
+  pixelCount:short;
   begin:Point;
   end:Point;
+  colorSpace:ColorSpace;
 }
 
 table Discovery {
