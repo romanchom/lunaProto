@@ -26,7 +26,7 @@ struct Point {
   z:float;
 }
 
-table Strand {
+struct Strand {
   id:byte;
   pixelCount:short;
   channels:ColorChannels;
@@ -35,6 +35,7 @@ table Strand {
 }
 
 table Discovery {
+  port:uint16;
   name:string;
   strands:[Strand];
 }

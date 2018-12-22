@@ -143,104 +143,72 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Point FLATBUFFERS_FINAL_CLASS {
 };
 FLATBUFFERS_STRUCT_END(Point, 12);
 
-struct Strand FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ID = 4,
-    VT_PIXELCOUNT = 6,
-    VT_CHANNELS = 8,
-    VT_BEGIN = 10,
-    VT_END = 12
-  };
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Strand FLATBUFFERS_FINAL_CLASS {
+ private:
+  int8_t id_;
+  int8_t padding0__;
+  int16_t pixelCount_;
+  int8_t channels_;
+  int8_t padding1__;  int16_t padding2__;
+  Point begin_;
+  Point end_;
+
+ public:
+  Strand() {
+    memset(this, 0, sizeof(Strand));
+  }
+  Strand(int8_t _id, int16_t _pixelCount, ColorChannels _channels, const Point &_begin, const Point &_end)
+      : id_(flatbuffers::EndianScalar(_id)),
+        padding0__(0),
+        pixelCount_(flatbuffers::EndianScalar(_pixelCount)),
+        channels_(flatbuffers::EndianScalar(static_cast<int8_t>(_channels))),
+        padding1__(0),
+        padding2__(0),
+        begin_(_begin),
+        end_(_end) {
+    (void)padding0__;
+    (void)padding1__;    (void)padding2__;
+  }
   int8_t id() const {
-    return GetField<int8_t>(VT_ID, 0);
+    return flatbuffers::EndianScalar(id_);
   }
   int16_t pixelCount() const {
-    return GetField<int16_t>(VT_PIXELCOUNT, 0);
+    return flatbuffers::EndianScalar(pixelCount_);
   }
   ColorChannels channels() const {
-    return static_cast<ColorChannels>(GetField<int8_t>(VT_CHANNELS, 0));
+    return static_cast<ColorChannels>(flatbuffers::EndianScalar(channels_));
   }
-  const Point *begin() const {
-    return GetStruct<const Point *>(VT_BEGIN);
+  const Point &begin() const {
+    return begin_;
   }
-  const Point *end() const {
-    return GetStruct<const Point *>(VT_END);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<int8_t>(verifier, VT_ID) &&
-           VerifyField<int16_t>(verifier, VT_PIXELCOUNT) &&
-           VerifyField<int8_t>(verifier, VT_CHANNELS) &&
-           VerifyField<Point>(verifier, VT_BEGIN) &&
-           VerifyField<Point>(verifier, VT_END) &&
-           verifier.EndTable();
+  const Point &end() const {
+    return end_;
   }
 };
-
-struct StrandBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_id(int8_t id) {
-    fbb_.AddElement<int8_t>(Strand::VT_ID, id, 0);
-  }
-  void add_pixelCount(int16_t pixelCount) {
-    fbb_.AddElement<int16_t>(Strand::VT_PIXELCOUNT, pixelCount, 0);
-  }
-  void add_channels(ColorChannels channels) {
-    fbb_.AddElement<int8_t>(Strand::VT_CHANNELS, static_cast<int8_t>(channels), 0);
-  }
-  void add_begin(const Point *begin) {
-    fbb_.AddStruct(Strand::VT_BEGIN, begin);
-  }
-  void add_end(const Point *end) {
-    fbb_.AddStruct(Strand::VT_END, end);
-  }
-  explicit StrandBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  StrandBuilder &operator=(const StrandBuilder &);
-  flatbuffers::Offset<Strand> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<Strand>(end);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<Strand> CreateStrand(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    int8_t id = 0,
-    int16_t pixelCount = 0,
-    ColorChannels channels = ColorChannels_none,
-    const Point *begin = 0,
-    const Point *end = 0) {
-  StrandBuilder builder_(_fbb);
-  builder_.add_end(end);
-  builder_.add_begin(begin);
-  builder_.add_pixelCount(pixelCount);
-  builder_.add_channels(channels);
-  builder_.add_id(id);
-  return builder_.Finish();
-}
+FLATBUFFERS_STRUCT_END(Strand, 32);
 
 struct Discovery FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_NAME = 4,
-    VT_STRANDS = 6
+    VT_PORT = 4,
+    VT_NAME = 6,
+    VT_STRANDS = 8
   };
+  uint16_t port() const {
+    return GetField<uint16_t>(VT_PORT, 0);
+  }
   const flatbuffers::String *name() const {
     return GetPointer<const flatbuffers::String *>(VT_NAME);
   }
-  const flatbuffers::Vector<flatbuffers::Offset<Strand>> *strands() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Strand>> *>(VT_STRANDS);
+  const flatbuffers::Vector<const Strand *> *strands() const {
+    return GetPointer<const flatbuffers::Vector<const Strand *> *>(VT_STRANDS);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_PORT) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
            VerifyOffset(verifier, VT_STRANDS) &&
            verifier.VerifyVector(strands()) &&
-           verifier.VerifyVectorOfTables(strands()) &&
            verifier.EndTable();
   }
 };
@@ -248,10 +216,13 @@ struct Discovery FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DiscoveryBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
+  void add_port(uint16_t port) {
+    fbb_.AddElement<uint16_t>(Discovery::VT_PORT, port, 0);
+  }
   void add_name(flatbuffers::Offset<flatbuffers::String> name) {
     fbb_.AddOffset(Discovery::VT_NAME, name);
   }
-  void add_strands(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Strand>>> strands) {
+  void add_strands(flatbuffers::Offset<flatbuffers::Vector<const Strand *>> strands) {
     fbb_.AddOffset(Discovery::VT_STRANDS, strands);
   }
   explicit DiscoveryBuilder(flatbuffers::FlatBufferBuilder &_fbb)
@@ -268,22 +239,26 @@ struct DiscoveryBuilder {
 
 inline flatbuffers::Offset<Discovery> CreateDiscovery(
     flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t port = 0,
     flatbuffers::Offset<flatbuffers::String> name = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Strand>>> strands = 0) {
+    flatbuffers::Offset<flatbuffers::Vector<const Strand *>> strands = 0) {
   DiscoveryBuilder builder_(_fbb);
   builder_.add_strands(strands);
   builder_.add_name(name);
+  builder_.add_port(port);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<Discovery> CreateDiscoveryDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t port = 0,
     const char *name = nullptr,
-    const std::vector<flatbuffers::Offset<Strand>> *strands = nullptr) {
+    const std::vector<Strand> *strands = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
-  auto strands__ = strands ? _fbb.CreateVector<flatbuffers::Offset<Strand>>(*strands) : 0;
+  auto strands__ = strands ? _fbb.CreateVectorOfStructs<Strand>(*strands) : 0;
   return luna::proto::CreateDiscovery(
       _fbb,
+      port,
       name__,
       strands__);
 }
