@@ -263,6 +263,36 @@ inline flatbuffers::Offset<Discovery> CreateDiscoveryDirect(
       strands__);
 }
 
+inline const luna::proto::Discovery *GetDiscovery(const void *buf) {
+  return flatbuffers::GetRoot<luna::proto::Discovery>(buf);
+}
+
+inline const luna::proto::Discovery *GetSizePrefixedDiscovery(const void *buf) {
+  return flatbuffers::GetSizePrefixedRoot<luna::proto::Discovery>(buf);
+}
+
+inline bool VerifyDiscoveryBuffer(
+    flatbuffers::Verifier &verifier) {
+  return verifier.VerifyBuffer<luna::proto::Discovery>(nullptr);
+}
+
+inline bool VerifySizePrefixedDiscoveryBuffer(
+    flatbuffers::Verifier &verifier) {
+  return verifier.VerifySizePrefixedBuffer<luna::proto::Discovery>(nullptr);
+}
+
+inline void FinishDiscoveryBuffer(
+    flatbuffers::FlatBufferBuilder &fbb,
+    flatbuffers::Offset<luna::proto::Discovery> root) {
+  fbb.Finish(root);
+}
+
+inline void FinishSizePrefixedDiscoveryBuffer(
+    flatbuffers::FlatBufferBuilder &fbb,
+    flatbuffers::Offset<luna::proto::Discovery> root) {
+  fbb.FinishSizePrefixed(root);
+}
+
 }  // namespace proto
 }  // namespace luna
 

@@ -39,3 +39,5 @@ table Discovery {
   name:string;
   strands:[Strand];
 }
+
+root_type Discovery;
