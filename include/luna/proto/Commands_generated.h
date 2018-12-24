@@ -11,18 +11,22 @@
 namespace luna {
 namespace proto {
 
+struct Null;
+
 struct Command;
 
 enum AnyCommand {
   AnyCommand_NONE = 0,
-  AnyCommand_SetColor = 1,
+  AnyCommand_Null = 1,
+  AnyCommand_SetColor = 2,
   AnyCommand_MIN = AnyCommand_NONE,
   AnyCommand_MAX = AnyCommand_SetColor
 };
 
-inline const AnyCommand (&EnumValuesAnyCommand())[2] {
+inline const AnyCommand (&EnumValuesAnyCommand())[3] {
   static const AnyCommand values[] = {
     AnyCommand_NONE,
+    AnyCommand_Null,
     AnyCommand_SetColor
   };
   return values;
@@ -31,6 +35,7 @@ inline const AnyCommand (&EnumValuesAnyCommand())[2] {
 inline const char * const *EnumNamesAnyCommand() {
   static const char * const names[] = {
     "NONE",
+    "Null",
     "SetColor",
     nullptr
   };
@@ -47,6 +52,10 @@ template<typename T> struct AnyCommandTraits {
   static const AnyCommand enum_value = AnyCommand_NONE;
 };
 
+template<> struct AnyCommandTraits<Null> {
+  static const AnyCommand enum_value = AnyCommand_Null;
+};
+
 template<> struct AnyCommandTraits<SetColor> {
   static const AnyCommand enum_value = AnyCommand_SetColor;
 };
@@ -54,14 +63,46 @@ template<> struct AnyCommandTraits<SetColor> {
 bool VerifyAnyCommand(flatbuffers::Verifier &verifier, const void *obj, AnyCommand type);
 bool VerifyAnyCommandVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types);
 
+struct Null FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct NullBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  explicit NullBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  NullBuilder &operator=(const NullBuilder &);
+  flatbuffers::Offset<Null> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Null>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Null> CreateNull(
+    flatbuffers::FlatBufferBuilder &_fbb) {
+  NullBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
 struct Command FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ACKNOWLEDGE = 4,
-    VT_COMMAND_TYPE = 6,
-    VT_COMMAND = 8
+    VT_ID = 4,
+    VT_ACK = 6,
+    VT_COMMAND_TYPE = 8,
+    VT_COMMAND = 10
   };
-  bool acknowledge() const {
-    return GetField<uint8_t>(VT_ACKNOWLEDGE, 0) != 0;
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
+  }
+  uint32_t ack() const {
+    return GetField<uint32_t>(VT_ACK, 0);
   }
   AnyCommand command_type() const {
     return static_cast<AnyCommand>(GetField<uint8_t>(VT_COMMAND_TYPE, 0));
@@ -70,18 +111,26 @@ struct Command FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     return GetPointer<const void *>(VT_COMMAND);
   }
   template<typename T> const T *command_as() const;
+  const Null *command_as_Null() const {
+    return command_type() == AnyCommand_Null ? static_cast<const Null *>(command()) : nullptr;
+  }
   const SetColor *command_as_SetColor() const {
     return command_type() == AnyCommand_SetColor ? static_cast<const SetColor *>(command()) : nullptr;
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_ACKNOWLEDGE) &&
+           VerifyField<uint32_t>(verifier, VT_ID) &&
+           VerifyField<uint32_t>(verifier, VT_ACK) &&
            VerifyField<uint8_t>(verifier, VT_COMMAND_TYPE) &&
            VerifyOffset(verifier, VT_COMMAND) &&
            VerifyAnyCommand(verifier, command(), command_type()) &&
            verifier.EndTable();
   }
 };
+
+template<> inline const Null *Command::command_as<Null>() const {
+  return command_as_Null();
+}
 
 template<> inline const SetColor *Command::command_as<SetColor>() const {
   return command_as_SetColor();
@@ -90,8 +139,11 @@ template<> inline const SetColor *Command::command_as<SetColor>() const {
 struct CommandBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_acknowledge(bool acknowledge) {
-    fbb_.AddElement<uint8_t>(Command::VT_ACKNOWLEDGE, static_cast<uint8_t>(acknowledge), 0);
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(Command::VT_ID, id, 0);
+  }
+  void add_ack(uint32_t ack) {
+    fbb_.AddElement<uint32_t>(Command::VT_ACK, ack, 0);
   }
   void add_command_type(AnyCommand command_type) {
     fbb_.AddElement<uint8_t>(Command::VT_COMMAND_TYPE, static_cast<uint8_t>(command_type), 0);
@@ -113,13 +165,15 @@ struct CommandBuilder {
 
 inline flatbuffers::Offset<Command> CreateCommand(
     flatbuffers::FlatBufferBuilder &_fbb,
-    bool acknowledge = false,
+    uint32_t id = 0,
+    uint32_t ack = 0,
     AnyCommand command_type = AnyCommand_NONE,
     flatbuffers::Offset<void> command = 0) {
   CommandBuilder builder_(_fbb);
   builder_.add_command(command);
+  builder_.add_ack(ack);
+  builder_.add_id(id);
   builder_.add_command_type(command_type);
-  builder_.add_acknowledge(acknowledge);
   return builder_.Finish();
 }
 
@@ -127,6 +181,10 @@ inline bool VerifyAnyCommand(flatbuffers::Verifier &verifier, const void *obj, A
   switch (type) {
     case AnyCommand_NONE: {
       return true;
+    }
+    case AnyCommand_Null: {
+      auto ptr = reinterpret_cast<const Null *>(obj);
+      return verifier.VerifyTable(ptr);
     }
     case AnyCommand_SetColor: {
       auto ptr = reinterpret_cast<const SetColor *>(obj);

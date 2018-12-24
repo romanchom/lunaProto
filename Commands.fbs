@@ -2,12 +2,17 @@ include "SetColor.fbs";
 
 namespace luna.proto;
 
+table Null {
+}
+
 union AnyCommand {
+    Null,
     SetColor,
 }
 
 table Command {
-    acknowledge:bool;
+    id:uint32 = 0;
+    ack:uint32 = 0;
     command:AnyCommand;
 }
 
