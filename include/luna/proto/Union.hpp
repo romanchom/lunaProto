@@ -48,17 +48,27 @@ public:
         mTypeIndex = detail::union_get<T, detail::type_tuple<Types...>>::index;
     }
 
+    template<typename T>
+    T const* as() const
+    {
+        if (detail::union_get<T, detail::type_tuple<Types...>>::index == mTypeIndex) {
+            return static_cast<T const*>(mData.get());
+        } else {
+            return nullptr;
+        }
+    }
+
     template<typename T, typename F>
-    int tryCall(T * object, void(T::*function)(F&))
+    int tryCall(T * object, void(T::*function)(F const&)) const
     {
         if (detail::union_get<F, detail::type_tuple<Types...>>::index == mTypeIndex) {
-            (object->*function)(*static_cast<F*>(mData.get()));
+            (object->*function)(*static_cast<F const*>(mData.get()));
         }
         return 0;
     }
     
     template<typename T, typename... F>
-    void call(T * object, F... functions)
+    void call(T * object, F... functions) const
     {
         detail::discard(tryCall(object, functions)...);
     }
