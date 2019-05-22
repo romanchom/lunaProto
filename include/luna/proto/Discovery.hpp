@@ -3,6 +3,7 @@
 #include "Scalar.hpp"
 #include "Array.hpp"
 #include "Union.hpp"
+#include "Format.hpp"
 
 namespace luna {
 namespace proto {
@@ -22,21 +23,18 @@ struct Point
     Scalar<float> x, y, z;
 };
 
-enum ColorChannels : uint8_t {
-    red = 1 << 0,
-    green = 1 << 1,
-    blue = 1 << 2,
-    white = 1 << 3,
-    redGreenBlue = red | green | blue,
+struct Location
+{
+    Point begin;
+    Point end;
 };
 
 struct StrandProperties
 {
     Scalar<uint8_t> id;
-    Scalar<ColorChannels> channels;
+    Scalar<Format> format;
     Scalar<uint16_t> pixelCount;
-    Point begin;
-    Point end;
+    Location location;
     ColorSpace colorSpace;
 };
 

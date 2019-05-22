@@ -8,28 +8,19 @@ namespace proto {
 
 namespace detail {
 
-template<typename... T>
-struct type_tuple;
-
 template<typename...>
 struct union_get;
 
-template<typename First>
-struct union_get<First, type_tuple<>>
+template<typename T, typename... Rest>
+struct union_get<T, T, Rest...>
 {
     static constexpr size_t index = 0;
 };
 
-template<typename T, typename... Rest>
-struct union_get<T, type_tuple<T, Rest...>>
-{
-    static constexpr size_t index = 1;
-};
-
 template<typename T, typename First, typename... Rest>
-struct union_get<T, type_tuple<First, Rest...>>
+struct union_get<T, First, Rest...>
 {
-    static constexpr size_t index = union_get<T, type_tuple<Rest...>>::index + 1;
+    static constexpr size_t index = union_get<T, Rest...>::index + 1;
 };
 
 template<typename... T>
@@ -45,13 +36,13 @@ public:
     void set(T* value)
     {
         mData = static_cast<void*>(value);
-        mTypeIndex = detail::union_get<T, detail::type_tuple<Types...>>::index;
+        mTypeIndex = detail::union_get<T, Types...>::index;
     }
 
     template<typename T>
     T const* as() const
     {
-        if (detail::union_get<T, detail::type_tuple<Types...>>::index == mTypeIndex) {
+        if (detail::union_get<T, Types...>::index == mTypeIndex) {
             return static_cast<T const*>(mData.get());
         } else {
             return nullptr;
@@ -61,7 +52,7 @@ public:
     template<typename T, typename F>
     int tryCall(T * object, void(T::*function)(F const&)) const
     {
-        if (detail::union_get<F, detail::type_tuple<Types...>>::index == mTypeIndex) {
+        if (detail::union_get<F, Types...>::index == mTypeIndex) {
             (object->*function)(*static_cast<F const*>(mData.get()));
         }
         return 0;
