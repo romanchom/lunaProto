@@ -13,7 +13,7 @@ struct RGB {
 
 struct StrandData {
     Scalar<uint8_t> id;
-    Union<Array<RGB>> data;
+    Union<Array<RGB>, Array<Scalar<uint16_t>>> data;
 };
 
 struct SetColor

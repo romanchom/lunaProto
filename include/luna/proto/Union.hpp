@@ -40,9 +40,12 @@ public:
     }
 
     template<typename T>
+    static constexpr size_t typeIndex = detail::union_get<T, Types...>::index;
+
+    template<typename T>
     T const* as() const
     {
-        if (detail::union_get<T, Types...>::index == mTypeIndex) {
+        if (typeIndex<T> == mTypeIndex) {
             return static_cast<T const*>(mData.get());
         } else {
             return nullptr;
@@ -52,7 +55,7 @@ public:
     template<typename T, typename F>
     int tryCall(T * object, void(T::*function)(F const&)) const
     {
-        if (detail::union_get<F, Types...>::index == mTypeIndex) {
+        if (typeIndex<T> == mTypeIndex) {
             (object->*function)(*static_cast<F const*>(mData.get()));
         }
         return 0;
