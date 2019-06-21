@@ -9,6 +9,13 @@ template<typename T>
 class Scalar
 {
 public:
+    explicit Scalar() = default;
+    
+    explicit Scalar(T value)
+    {
+        set(value);
+    }
+
     Scalar & operator=(T value)
     {
         set(value);

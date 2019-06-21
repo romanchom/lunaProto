@@ -14,7 +14,7 @@ struct union_get;
 template<typename T, typename... Rest>
 struct union_get<T, T, Rest...>
 {
-    static constexpr size_t index = 0;
+    static constexpr size_t index = 1;
 };
 
 template<typename T, typename First, typename... Rest>
