@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <cstddef>
 
 namespace luna {
 namespace proto {
@@ -8,7 +8,7 @@ namespace proto {
 class Builder
 {
 public:
-    explicit Builder(uint8_t * storage) :
+    explicit Builder(std::byte * storage) :
         mBegin(storage),
         mPointer(storage)
     {}
@@ -24,7 +24,7 @@ public:
         return ret;
     }
 
-    uint8_t const * data()
+    std::byte const * data()
     {
         return mBegin;
     }
@@ -34,8 +34,8 @@ public:
         return mPointer - mBegin;
     }
 private:
-    uint8_t * const mBegin;
-    uint8_t * mPointer;
+    std::byte * const mBegin;
+    std::byte * mPointer;
 };
 
 }
