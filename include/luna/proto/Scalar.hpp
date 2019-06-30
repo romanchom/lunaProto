@@ -11,7 +11,7 @@ class Scalar
 public:
     explicit Scalar() = default;
     
-    explicit Scalar(T value)
+    Scalar(T value)
     {
         set(value);
     }
