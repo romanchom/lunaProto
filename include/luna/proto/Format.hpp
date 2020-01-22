@@ -9,6 +9,7 @@ enum struct Format : uint8_t
 {
     RGB8,
     White16,
+    RGBW16,
 };
 
 }
